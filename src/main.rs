@@ -1,0 +1,36 @@
+use actix_web::{middleware::Logger, web, App, HttpServer};
+
+mod app_config;
+mod app_state;
+mod db;
+mod errors;
+mod handlers;
+mod models;
+
+#[actix_web::main] // or #[tokio::main]
+async fn main() -> std::io::Result<()> {
+    // Load the .env file, if exists
+    dotenv::dotenv().ok();
+    env_logger::init();
+
+    // Load applicagtion config from ENV
+    let config = app_config::AppConfig::init().expect("Well, shit");
+
+    // Hand a copy of the config to the app_state.
+    let app_state = app_state::AppState::new(config.clone()).await;
+    log::info!("database url: {}", &app_state.config.database_url);
+    log::info!(
+        "🚀 running on http://localhost:{}",
+        app_state.config.tiny_url_port
+    );
+
+    HttpServer::new(move || {
+        App::new()
+            .app_data(web::Data::new(app_state.clone()))
+            .configure(handlers::config)
+            .wrap(Logger::default())
+    })
+    .bind((config.tiny_url_host, config.tiny_url_port))?
+    .run()
+    .await
+}

@@ -1,0 +1,31 @@
+[package]
+name = "tiny_url"
+version = "0.1.0"
+edition = "2021"
+description = "Demo of actix-web, sqlx with postgres"
+keywords = [
+    "actix-web",
+    "sqlx",
+    "postgres",
+    "chrono",
+    "serde",
+    "nanoid",
+    "url",
+    "bruno",
+]
+authors = ["David Skyberg <davidskyberg@gmail.com"]
+license = "MIT"
+
+[dependencies]
+actix-web = "4.4.0"
+chrono = { version = "0.4.31", features = ["serde"] }
+dotenv = "0.15.0"
+env_logger = "0.10.0"
+log = "0.4.20"
+nanoid = "0.4.0"
+serde = { version = "1.0.190", features = ["derive"] }
+serde_json = "1.0.108"
+sqlx = { version = "0.7.2", features = ["runtime-tokio", "postgres", "chrono"] }
+thiserror = "1.0.50"
+tokio = { version = "1.33.0", features = ["full"] }
+url = "2.4.1"

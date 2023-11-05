@@ -1,0 +1,17 @@
+meta {
+  name: Update URL
+  type: http
+  seq: 6
+}
+
+patch {
+  url: http://{{server}}/api/url/5GyqMuX5Kh
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "url": "https://updated.url.com"
+  }
+}
