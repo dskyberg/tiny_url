@@ -19,8 +19,10 @@ license = "MIT"
 [dependencies]
 actix-web = "4.4.0"
 chrono = { version = "0.4.31", features = ["serde"] }
+convert_case = "0.6.0"
 dotenv = "0.15.0"
 env_logger = "0.10.0"
+envy = "0.4.2"
 log = "0.4.20"
 nanoid = "0.4.0"
 serde = { version = "1.0.190", features = ["derive"] }

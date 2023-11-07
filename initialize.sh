@@ -15,11 +15,8 @@ if [ $? = 1 ]; then
     echo '"docker-compose down" threw an error'
     exit 1
 fi
+
 docker volume rm tiny_url_db >& /dev/null
-if [ $? = 1 ]; then
-    echo '"docker volume rm tiny_url_db" threw an error'
-    exit 1
-fi
 
 docker-compose up -d >& /dev/null
 if [ $? = 1 ]; then
