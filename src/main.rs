@@ -11,6 +11,7 @@ mod models;
 async fn main() -> std::io::Result<()> {
     // Load the .env file, if exists
     dotenv::dotenv().ok();
+
     env_logger::init();
 
     // Load applicagtion config from ENV
@@ -18,10 +19,12 @@ async fn main() -> std::io::Result<()> {
 
     // Hand a copy of the config to the app_state.
     let app_state = app_state::AppState::new(config.clone()).await;
+
     log::info!("database url: {}", &app_state.config.database_url);
     log::info!(
-        "🚀 running on http://localhost:{}",
-        app_state.config.tiny_url_port
+        "🚀 version {}: running on http://localhost:{}",
+        &app_state.config.package.version,
+        app_state.config.port
     );
 
     HttpServer::new(move || {
@@ -30,7 +33,7 @@ async fn main() -> std::io::Result<()> {
             .configure(handlers::config)
             .wrap(Logger::default())
     })
-    .bind((config.tiny_url_host, config.tiny_url_port))?
+    .bind((config.host, config.port))?
     .run()
     .await
 }

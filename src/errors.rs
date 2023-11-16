@@ -8,8 +8,4 @@ pub enum AppError {
     EnvNotFound(#[from] std::env::VarError),
     #[error("Parse error: {0}")]
     ParseIntErrror(#[from] core::num::ParseIntError),
-    #[error("{0}")]
-    MissingAppConfigField(String),
-    #[error("{0}")]
-    UnexpectedError(String),
 }

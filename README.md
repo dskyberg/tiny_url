@@ -1,19 +1,20 @@
 # tiny_url
 
-This repo demonstrates how to use actix-web, sqlx, and postgres.  None of this is original work.  I have just assembled what I have found to be useful.
+This repo demonstrates how to use actix-web, sqlx, and postgres.  None of this is original work.  I have just assembled what I have found to be useful. But I think it's a useful "getting started" demo for setting up a simple web app with typical Rust crates.
 
-## Setting up a .env
+## Setting up app configuration
+This app uses [Figment] to managage configuration.  Currently [AppConfig] builds configuration from an `App.toml`, if one exists, and from env vars.  It's totally up to you which you choose to populate.  Or, just use the defaults in [AppConfig]!
 
-Here's an example .env that you can copy:
+Since we are using sqlx, the database_url must be defined in an env var.  The app uses [dotenv].  So you can either use a .env file, or add to the shell before running.
+
+Here's all the possible config settings.  Again, only DATABASE_URL is required.
 
 ```bash
 RUST_LOG=info
 TINY_URL_HOST=127.0.0.1
 TINY_URL_PORT=8080
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
-POSTGRES_DB=tiny_url
-DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}?schema=public
+# Required for sqlx
+DATABASE_URL=postgresql://postgre:postgre@localhost:5432/tiny_url
 ```
 
 ## CoLima
@@ -42,7 +43,7 @@ Then just do `cargo run` to launch the web server.  It will listen on `localhost
 
 ## Testing
 
-I use [Bruno](https://www.usebruno.com/), but feel free to use Postman, curl, or whatever.
+I use [Bruno], but feel free to use Postman, curl, or whatever.
 
 ### `GET http://localhost:8080/api/healthcheck`
 
@@ -58,3 +59,9 @@ This API just checks to see if the service is running. It should return:
 ## LICENSE
 MIT
 I copied most of this from other sources.  Feel free to pay it forward.
+
+[Figment]: https://docs.rs/figment
+[Bruno]: https://www.usebruno.com
+[AppConfig]: src/app_config.rs
+[sqlx]: https://docs.rs/sqlx
+[dotenv]: https://docs.rs/dotenv

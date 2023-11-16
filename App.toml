@@ -1,0 +1,6 @@
+# Non-production defaults.  Just for making testing the crate easier
+# This is just for demonstration.  It is not needed. Use it, or not!
+[default]
+host = "127.0.0.1"
+port = 8080
+database_url = "postgresql://postgres:postgres@localhost:5432/tiny_url_port"
