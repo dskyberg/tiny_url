@@ -1,4 +1,5 @@
 use actix_web::{middleware::Logger, web, App, HttpServer};
+use env_logger::Env;
 
 mod app_config;
 mod app_state;
@@ -12,7 +13,8 @@ async fn main() -> std::io::Result<()> {
     // Load the .env file, if exists
     dotenv::dotenv().ok();
 
-    env_logger::init();
+    // env_logger::init();
+    env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
 
     // Load applicagtion config from ENV
     let config = app_config::AppConfig::init().expect("Well, shit");

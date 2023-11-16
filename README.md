@@ -10,6 +10,7 @@ Since we are using sqlx, the database_url must be defined in an env var.  The ap
 Here's all the possible config settings.  Again, only DATABASE_URL is required.
 
 ```bash
+# The app defaults to info. So, this isn't actually necessary. Just for demo.
 RUST_LOG=info
 TINY_URL_HOST=127.0.0.1
 TINY_URL_PORT=8080
