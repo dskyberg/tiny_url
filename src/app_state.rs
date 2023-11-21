@@ -3,6 +3,7 @@ use crate::{app_config::AppConfig, repository::PostgresUrlRepository};
 #[derive(Clone)]
 pub struct AppState {
     pub config: AppConfig,
+    //TODO: Convert this to Box<dyn UrlRepository>
     pub db: PostgresUrlRepository,
 }
 
