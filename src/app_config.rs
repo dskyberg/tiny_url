@@ -61,11 +61,14 @@ impl TryFrom<AppConfigBuilder> for AppConfig {
     type Error = Box<dyn std::error::Error>;
     fn try_from(acb: AppConfigBuilder) -> std::prelude::v1::Result<Self, Self::Error> {
         let mut config = AppConfig::default();
+        if let Some(package) = acb.package {
+            config.package = package;
+        }
         if let Some(host) = acb.host {
-            config.host = host
+            config.host = host;
         }
         if let Some(port) = acb.port {
-            config.port = port
+            config.port = port;
         }
         if let Some(databbase_url) = acb.database_url {
             config.database_url = databbase_url;
