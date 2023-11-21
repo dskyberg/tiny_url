@@ -85,7 +85,7 @@ async fn put_url_handler(body: web::Json<UrlRequest>, data: web::Data<AppState>)
     let tiny = TinyUrl::create(&body.url);
     let result = data.db.create(&tiny).await;
     match result {
-        Ok(tiny) => HttpResponse::Ok().json(json!({"status": "success","message": tiny})),
+        Ok(tiny) => HttpResponse::Created().json(json!({"status": "success","message": tiny})),
         Err(err) => {
             log::info!("Error from DB: {}", err.to_string());
             HttpResponse::BadRequest()
@@ -98,7 +98,7 @@ async fn put_url_handler(body: web::Json<UrlRequest>, data: web::Data<AppState>)
 /// Update a stored tiny url with the src_url from [UrlRequest] body
 /// Response: [TinyUrl]
 #[patch("/url/{tiny_url}")]
-async fn post_url_handler(
+async fn patch_url_handler(
     body: web::Json<UrlRequest>,
     path: web::Path<String>,
     data: web::Data<AppState>,
@@ -150,7 +150,7 @@ pub fn config(conf: &mut web::ServiceConfig) {
                 .service(api_health_checker_handler)
                 .service(get_url_handler)
                 .service(put_url_handler)
-                .service(post_url_handler)
+                .service(patch_url_handler)
                 .service(delete_url_handler),
         );
 }
