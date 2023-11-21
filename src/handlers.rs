@@ -9,6 +9,7 @@ use url::Url;
 use crate::{
     app_state::AppState,
     models::{TinyUrl, UrlRequest},
+    repository::UrlRepository,
 };
 
 /// GET /api/{key}
@@ -17,7 +18,7 @@ use crate::{
 #[get("/{key}")]
 async fn redirect_handler(path: web::Path<String>, data: web::Data<AppState>) -> impl Responder {
     // The path holds the "key" value
-    let result = data.db.get_url(&path.into_inner()).await;
+    let result = data.db.get(&path.into_inner()).await;
 
     match result {
         Ok(tiny) => {
@@ -54,7 +55,7 @@ async fn api_health_checker_handler() -> impl Responder {
 #[get("/url/{tiny_url}")]
 async fn get_url_handler(path: web::Path<String>, data: web::Data<AppState>) -> impl Responder {
     let tiny_url = path.into_inner();
-    match data.db.get_url(&tiny_url).await {
+    match data.db.get(&tiny_url).await {
         Ok(tiny) => HttpResponse::Ok().json(json!({
             "status":"success",
             "message": tiny
@@ -82,7 +83,7 @@ async fn put_url_handler(body: web::Json<UrlRequest>, data: web::Data<AppState>)
     }
 
     let tiny = TinyUrl::create(&body.url);
-    let result = data.db.put_url(&tiny).await;
+    let result = data.db.create(&tiny).await;
     match result {
         Ok(tiny) => HttpResponse::Ok().json(json!({"status": "success","message": tiny})),
         Err(err) => {
@@ -111,7 +112,7 @@ async fn post_url_handler(
         }));
     }
 
-    match data.db.update_url(&tiny_url, &body.url).await {
+    match data.db.update(&tiny_url, &body.url).await {
         Ok(tiny) => HttpResponse::Ok().json(json!({
             "status":"success",
             "message": tiny
@@ -128,7 +129,7 @@ async fn post_url_handler(
 #[delete("/url/{tiny_url}")]
 async fn delete_url_handler(path: web::Path<String>, data: web::Data<AppState>) -> impl Responder {
     let tiny_url = path.into_inner();
-    match data.db.delete_url(&tiny_url).await {
+    match data.db.delete(&tiny_url).await {
         Ok(_) => HttpResponse::Ok().json(json!({
             "status":"success",
             "message": format!("{} successfully deleted", &tiny_url)

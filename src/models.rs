@@ -1,13 +1,14 @@
 use chrono::{DateTime, Utc};
 use nanoid::nanoid;
 use serde::{Deserialize, Serialize};
+use sqlx::prelude::FromRow;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct UrlRequest {
     pub url: String,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, FromRow, Deserialize, Serialize)]
 pub struct TinyUrl {
     pub url: String,
     pub src_url: String,

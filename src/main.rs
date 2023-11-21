@@ -3,7 +3,6 @@ use env_logger::Env;
 
 mod app_config;
 mod app_state;
-mod db;
 mod errors;
 mod handlers;
 mod models;
