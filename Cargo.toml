@@ -19,6 +19,7 @@ license = "MIT"
 
 [dependencies]
 actix-web = "4.4.0"
+async-trait = "0.1.74"
 chrono = { version = "0.4.31", features = ["serde"] }
 convert_case = "0.6.0"
 dotenv = "0.15.0"

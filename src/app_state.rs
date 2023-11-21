@@ -1,16 +1,19 @@
-use crate::{app_config::AppConfig, db::DB};
+use crate::{
+    app_config::AppConfig,
+    repository::{PostgresUrlRepository, UrlRepository},
+};
 
 #[derive(Clone)]
 pub struct AppState {
     pub config: AppConfig,
-    pub db: DB,
+    pub db: Box<dyn UrlRepository>,
 }
 
 impl AppState {
     pub async fn new(config: AppConfig) -> Self {
         Self {
             config,
-            db: DB::new().await,
+            db: Box::new(PostgresUrlRepository::new().await),
         }
     }
 }
