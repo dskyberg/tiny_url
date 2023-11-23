@@ -3,10 +3,7 @@ use async_trait::async_trait;
 use crate::{errors::Result, models::TinyUrl};
 
 #[async_trait]
-pub trait UrlRepository: Sized + Clone
-where
-    Self: Sized,
-{
+pub trait UrlRepository: Clone {
     async fn all(&self) -> Result<Vec<TinyUrl>>;
     async fn get(&self, id: &str) -> Result<TinyUrl>;
     async fn create(&self, student: &TinyUrl) -> Result<TinyUrl>;
