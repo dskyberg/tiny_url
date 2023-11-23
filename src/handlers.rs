@@ -9,7 +9,6 @@ use url::Url;
 use crate::{
     app_state::AppState,
     models::{TinyUrl, UrlRequest},
-    repository::UrlRepository,
 };
 
 /// GET /api/{key}
