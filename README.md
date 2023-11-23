@@ -2,6 +2,11 @@
 
 This repo demonstrates how to use actix-web, sqlx, and postgres.  None of this is original work.  I have just assembled what I have found to be useful. But I think it's a useful "getting started" demo for setting up a simple web app with typical Rust crates.
 
+## Cloning and Traits and [DynClone]
+
+Since this app is built on Actix-Web (and Tokio), any application data provided to
+the runtime (via `app_data`) must be clonable and sendable.  This creates a minor problem for abstractions such as the [UrlRepository] trait.  Traits cannot directly be Clonable.  [DynClone] solves this problem.
+
 ## Setting up app configuration
 This app uses [Figment] to managage configuration.  Currently [AppConfig] builds configuration from an `App.toml`, if one exists, and from env vars.  It's totally up to you which you choose to populate.  Or, just use the defaults in [AppConfig]!
 
@@ -66,3 +71,5 @@ I copied most of this from other sources.  Feel free to pay it forward.
 [AppConfig]: src/app_config.rs
 [sqlx]: https://docs.rs/sqlx
 [dotenv]: https://docs.rs/dotenv
+[UrlRepository]: ./src/repository/url_repository.rs
+[DynClone]: https://docs.rs/dyn_clone

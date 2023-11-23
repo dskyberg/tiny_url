@@ -5,13 +5,16 @@ use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
 use super::url_repository::UrlRepository;
 use crate::{errors::Result, models::TinyUrl};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct PostgresUrlRepository {
     pub pool: Pool<Postgres>,
 }
 
-impl PostgresUrlRepository {
-    pub async fn new() -> Self {
+impl PostgresUrlRepository {}
+
+#[async_trait]
+impl UrlRepository for PostgresUrlRepository {
+    async fn new() -> Self {
         let database_url = match std::env::var("DATABASE_URL") {
             Ok(url) => url,
             Err(_) => {
@@ -31,10 +34,7 @@ impl PostgresUrlRepository {
             }
         }
     }
-}
 
-#[async_trait]
-impl UrlRepository for PostgresUrlRepository {
     async fn all(&self) -> Result<Vec<TinyUrl>> {
         let recs = sqlx::query_as!(TinyUrl, "SELECT * FROM urls")
             .fetch_all(&self.pool)
