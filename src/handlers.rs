@@ -4,7 +4,6 @@
 /// GET /{tiny_url}
 use actix_web::{delete, get, http::header, patch, put, web, HttpResponse, Responder};
 use serde_json::json;
-use url::Url;
 
 use crate::{
     app_state::AppState,
@@ -65,20 +64,14 @@ async fn get_url_handler(
 /// GET /api/url
 /// Returns all urls,  Not Found
 #[get("/url")]
-async fn get_all_url_handler(data: web::Data<AppState>) -> impl Responder {
-    match data.service.all().await {
-        Ok(urls) => {
-            let list = ListUrlsResponse { urls };
-            HttpResponse::Ok().json(json!({
-                "status":"success",
-                "message": list
-            }))
-        }
-        Err(e) => HttpResponse::NotFound().json(json!({
-            "status": "not found",
-            "message": e.to_string()
-        })),
-    }
+async fn get_all_url_handler(data: web::Data<AppState>) -> Result<HttpResponse, ServiceError> {
+    let urls = data.service.all().await?;
+    let list = ListUrlsResponse { urls };
+
+    Ok(HttpResponse::Ok().json(json!({
+        "status":"success",
+        "message": list
+    })))
 }
 
 /// PUT /api/url
@@ -86,72 +79,53 @@ async fn get_all_url_handler(data: web::Data<AppState>) -> impl Responder {
 /// url must be valid.
 /// Response: [TinyUrl]
 ///
+/// Note: The UrlRequest is validated in the model.
 #[put("/url")]
-async fn put_url_handler(body: web::Json<UrlRequest>, data: web::Data<AppState>) -> impl Responder {
-    // Test to see if the provided URL is valid.  If not, return BadRequest
-    if Url::parse(&body.url).is_err() {
-        return HttpResponse::BadRequest().json(json!({
-            "status": "bad request",
-            "message": "Invalid URL"
-        }));
-    }
+async fn put_url_handler(
+    body: web::Json<UrlRequest>,
+    data: web::Data<AppState>,
+) -> Result<HttpResponse, ServiceError> {
+    let tiny = data.service.create(&body).await?;
 
-    let result = data.service.create(&body).await;
-    match result {
-        Ok(tiny) => HttpResponse::Created().json(json!({"status": "success","message": tiny})),
-        Err(err) => {
-            log::info!("Error from DB: {}", err.to_string());
-            HttpResponse::BadRequest()
-                .json(json!({"status":"bad request", "message":"URL was not created"}))
-        }
-    }
+    Ok(HttpResponse::Created().json(json!({"status": "success","message": tiny})))
 }
 
 /// PATCH /api/url/{tiny_url}
 /// Update a stored tiny url with the src_url from [UrlRequest] body
 /// Response: [TinyUrl]
+///
+/// Note: the UrlRequest is validated in the model.
 #[patch("/url/{tiny_url}")]
 async fn patch_url_handler(
     body: web::Json<UrlRequest>,
     path: web::Path<String>,
     data: web::Data<AppState>,
-) -> impl Responder {
+) -> Result<HttpResponse, ServiceError> {
     let tiny_url = path.into_inner();
-    // Test to see if the provided URL is valid.  If not, return BadRequest
-    if Url::parse(&body.url).is_err() {
-        return HttpResponse::BadRequest().json(json!({
-            "status": "bad request",
-            "message": "Invalid URL"
-        }));
-    }
 
-    match data.service.update(&tiny_url, &body).await {
-        Ok(tiny) => HttpResponse::Ok().json(json!({
-            "status":"success",
-            "message": tiny
-        })),
-        Err(e) => HttpResponse::NotFound().json(json!({
-            "status": "not found",
-            "message": e.to_string()
-        })),
-    }
+    let tiny = data.service.update(&tiny_url, &body).await?;
+
+    Ok(HttpResponse::Ok().json(json!({
+        "status":"success",
+        "message": tiny
+    })))
 }
 
 /// DELETE /api/url/{tiny_url}
 /// Returns success or Not Found
 #[delete("/url/{tiny_url}")]
-async fn delete_url_handler(path: web::Path<String>, data: web::Data<AppState>) -> impl Responder {
+async fn delete_url_handler(
+    path: web::Path<String>,
+    data: web::Data<AppState>,
+) -> Result<HttpResponse, ServiceError> {
     let tiny_url = path.into_inner();
-    match data.service.delete(&tiny_url).await {
-        Ok(_) => HttpResponse::Ok().json(json!({
-            "status":"success",
-            "message": format!("{} successfully deleted", &tiny_url)
-        })),
-        Err(e) => HttpResponse::NotFound().json(json!({
-            "status": "not found",
-            "message": e.to_string()
-        })),
-    }
+
+    data.service.delete(&tiny_url).await?;
+
+    Ok(HttpResponse::Ok().json(json!({
+        "status":"success",
+        "message": format!("{} successfully deleted", &tiny_url)
+    })))
 }
 
 /// Demonstrate chaining scopes with ServiceConfig
