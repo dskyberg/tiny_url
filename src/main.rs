@@ -2,13 +2,15 @@ use actix_web::{middleware::Logger, web, App, HttpServer};
 use env_logger::Env;
 
 use crate::repository::{PostgresUrlRepository, UrlRepository};
+use crate::service::UrlServiceImpl;
 
 mod app_config;
 mod app_state;
 mod errors;
 mod handlers;
-mod models;
+mod model;
 mod repository;
+mod service;
 
 #[actix_web::main] // or #[tokio::main]
 async fn main() -> std::io::Result<()> {
@@ -20,9 +22,10 @@ async fn main() -> std::io::Result<()> {
 
     // Load applicagtion config from ENV
     let config = app_config::AppConfig::init().expect("Well, shit");
-    let db = Box::new(PostgresUrlRepository::new().await);
+    let db = PostgresUrlRepository::new().await;
+    let service = Box::new(UrlServiceImpl::new(db));
     // Hand a copy of the config to the app_state.
-    let app_state = app_state::AppState::new(config.clone(), db).await;
+    let app_state = app_state::AppState::new(config.clone(), service).await;
 
     log::info!("database url: {}", &app_state.config.database_url);
     log::info!(

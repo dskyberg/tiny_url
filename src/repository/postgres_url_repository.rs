@@ -2,8 +2,8 @@ use async_trait::async_trait;
 use chrono::Utc;
 use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
 
-use super::url_repository::UrlRepository;
-use crate::{errors::Result, models::TinyUrl};
+use super::{error::Result, UrlRepository};
+use crate::model::TinyUrl;
 
 #[derive(Clone, Debug)]
 pub struct PostgresUrlRepository {
@@ -39,6 +39,8 @@ impl UrlRepository for PostgresUrlRepository {
         let recs = sqlx::query_as!(TinyUrl, "SELECT * FROM urls")
             .fetch_all(&self.pool)
             .await?;
+
+        log::info!("Fetched all rows");
         Ok(recs)
     }
 
@@ -47,12 +49,12 @@ impl UrlRepository for PostgresUrlRepository {
             .fetch_one(&self.pool)
             .await?;
 
-        log::info!("Fetched: {:?}", &rec);
+        log::info!("Found: {:?}", &rec);
         Ok(rec)
     }
 
     async fn create(&self, tiny: &TinyUrl) -> Result<TinyUrl> {
-        let row =
+        let rec =
             sqlx::query_as!(TinyUrl,"INSERT INTO urls ( url, src_url, created_at, updated_at ) VALUES ($1, $2, $3, $4) RETURNING * ",
                 &tiny.url,
                 &tiny.src_url,
@@ -61,8 +63,8 @@ impl UrlRepository for PostgresUrlRepository {
                 .fetch_one(&self.pool)
                 .await?;
 
-        log::info!("Inserted: {:?}", row);
-        Ok(row)
+        log::info!("Inserted: {:?}", &rec);
+        Ok(rec)
     }
 
     async fn update(&self, tiny_url: &str, src_url: &str) -> Result<TinyUrl> {

@@ -8,7 +8,8 @@ use url::Url;
 
 use crate::{
     app_state::AppState,
-    models::{TinyUrl, UrlRequest},
+    model::{ListUrlsResponse, MessageResponse, UrlRequest},
+    service::ServiceError,
 };
 
 /// GET /api/{key}
@@ -17,7 +18,7 @@ use crate::{
 #[get("/{key}")]
 async fn redirect_handler(path: web::Path<String>, data: web::Data<AppState>) -> impl Responder {
     // The path holds the "key" value
-    let result = data.db.get(&path.into_inner()).await;
+    let result = data.service.get(&path.into_inner()).await;
 
     match result {
         Ok(tiny) => {
@@ -45,20 +46,34 @@ async fn redirect_handler(path: web::Path<String>, data: web::Data<AppState>) ->
 /// Just returns an OK status message, if server is running.
 #[get("/healthcheck")]
 async fn api_health_checker_handler() -> impl Responder {
-    const MESSAGE: &str = "API Server is up and running";
-    HttpResponse::Ok().json(json!({"status": "success","message": MESSAGE}))
+    let message = MessageResponse::new("success", json!("API Server is up and running"));
+    HttpResponse::Ok().json(message)
 }
 
 /// GET /api/url/{tiny_url}
 /// Returns the [TinyUrl] or Not Found
 #[get("/url/{tiny_url}")]
-async fn get_url_handler(path: web::Path<String>, data: web::Data<AppState>) -> impl Responder {
+async fn get_url_handler(
+    path: web::Path<String>,
+    data: web::Data<AppState>,
+) -> Result<HttpResponse, ServiceError> {
     let tiny_url = path.into_inner();
-    match data.db.get(&tiny_url).await {
-        Ok(tiny) => HttpResponse::Ok().json(json!({
-            "status":"success",
-            "message": tiny
-        })),
+    let url = data.service.get(&tiny_url).await?;
+    Ok(HttpResponse::Ok().json(MessageResponse::new("ok", json!(url))))
+}
+
+/// GET /api/url
+/// Returns all urls,  Not Found
+#[get("/url")]
+async fn get_all_url_handler(data: web::Data<AppState>) -> impl Responder {
+    match data.service.all().await {
+        Ok(urls) => {
+            let list = ListUrlsResponse { urls };
+            HttpResponse::Ok().json(json!({
+                "status":"success",
+                "message": list
+            }))
+        }
         Err(e) => HttpResponse::NotFound().json(json!({
             "status": "not found",
             "message": e.to_string()
@@ -81,8 +96,7 @@ async fn put_url_handler(body: web::Json<UrlRequest>, data: web::Data<AppState>)
         }));
     }
 
-    let tiny = TinyUrl::create(&body.url);
-    let result = data.db.create(&tiny).await;
+    let result = data.service.create(&body).await;
     match result {
         Ok(tiny) => HttpResponse::Created().json(json!({"status": "success","message": tiny})),
         Err(err) => {
@@ -111,7 +125,7 @@ async fn patch_url_handler(
         }));
     }
 
-    match data.db.update(&tiny_url, &body.url).await {
+    match data.service.update(&tiny_url, &body).await {
         Ok(tiny) => HttpResponse::Ok().json(json!({
             "status":"success",
             "message": tiny
@@ -128,7 +142,7 @@ async fn patch_url_handler(
 #[delete("/url/{tiny_url}")]
 async fn delete_url_handler(path: web::Path<String>, data: web::Data<AppState>) -> impl Responder {
     let tiny_url = path.into_inner();
-    match data.db.delete(&tiny_url).await {
+    match data.service.delete(&tiny_url).await {
         Ok(_) => HttpResponse::Ok().json(json!({
             "status":"success",
             "message": format!("{} successfully deleted", &tiny_url)
@@ -147,6 +161,7 @@ pub fn config(conf: &mut web::ServiceConfig) {
         .service(
             web::scope("/api")
                 .service(api_health_checker_handler)
+                .service(get_all_url_handler)
                 .service(get_url_handler)
                 .service(put_url_handler)
                 .service(patch_url_handler)

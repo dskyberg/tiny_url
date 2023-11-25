@@ -2,7 +2,8 @@ use async_trait::async_trait;
 use dyn_clone::DynClone;
 use std::fmt::Debug;
 
-use crate::{errors::Result, models::TinyUrl};
+use super::error::Result;
+use crate::model::TinyUrl;
 
 /// UrlRepository is a simple abstraction for the database implementation
 /// Note:  Since a trait cannot directly rely on Clone, and this trait is

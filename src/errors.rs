@@ -8,4 +8,6 @@ pub enum AppError {
     EnvNotFound(#[from] std::env::VarError),
     #[error("Parse error: {0}")]
     ParseIntErrror(#[from] core::num::ParseIntError),
+    #[error("Database error: {0}")]
+    DataBaseError(#[from] crate::repository::DbError),
 }
