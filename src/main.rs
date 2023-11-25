@@ -1,6 +1,9 @@
 use actix_web::{middleware::Logger, web, App, HttpServer};
 use env_logger::Env;
 
+use utoipa::OpenApi;
+use utoipa_swagger_ui::SwaggerUi;
+
 use crate::repository::{PostgresUrlRepository, UrlRepository};
 use crate::service::UrlServiceImpl;
 
@@ -34,10 +37,28 @@ async fn main() -> std::io::Result<()> {
         app_state.config.port
     );
 
+    #[derive(OpenApi)]
+    #[openapi(
+        paths(
+            handlers::get_url_handler,
+        ),
+        components(
+            schemas(model::TinyUrl, model::UrlRequest, model::ErrorResponse, model::MessageResponse, model::ListUrlsResponse)
+        ),
+        tags(
+            (name = "tiny_url", description = "Url Minifier with sanoids.")
+        )
+    )]
+    struct ApiDoc;
+    let openapi = ApiDoc::openapi();
+
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(app_state.clone()))
             .configure(handlers::config)
+            .service(
+                SwaggerUi::new("/swagger-ui/{_:.*}").url("/api-docs/openapi.json", openapi.clone()),
+            )
             .wrap(Logger::default())
     })
     .bind((config.host, config.port))?

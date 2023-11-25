@@ -3,6 +3,7 @@
 /// At the top level, there is only 1 GET that manages the redirect
 /// GET /{tiny_url}
 use actix_web::{delete, get, http::header, patch, put, web, HttpResponse, Responder};
+use chrono::{DateTime, Utc};
 use serde_json::json;
 
 use crate::{
@@ -51,8 +52,23 @@ async fn api_health_checker_handler() -> impl Responder {
 
 /// GET /api/url/{tiny_url}
 /// Returns the [TinyUrl] or Not Found
+#[utoipa::path(
+    responses(
+        (status = 200, description = "Get url", body = MessageResponse, example = json!(
+            MessageResponse {
+                status:"ok".to_string(),
+                message: json!(crate::model::TinyUrl {
+                    created_at: "2023-11-04T20:07:31.857784Z".parse::<DateTime<Utc>>().unwrap(),
+                    src_url: "https://github.com/kornelski/rust_urlencoding".to_string(),
+                    updated_at: "2023-11-04T20:07:31.857784Z".parse::<DateTime<Utc>>().unwrap(),
+                    url: "ODCKrjcBPy".to_string()
+                })
+        })
+    )
+)
+)]
 #[get("/url/{tiny_url}")]
-async fn get_url_handler(
+pub async fn get_url_handler(
     path: web::Path<String>,
     data: web::Data<AppState>,
 ) -> Result<HttpResponse, ServiceError> {

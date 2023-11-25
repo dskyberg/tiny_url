@@ -3,9 +3,10 @@ use nanoid::nanoid;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sqlx::prelude::FromRow;
+use utoipa::ToSchema;
 use validator::Validate;
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, ToSchema)]
 pub struct MessageResponse {
     pub status: String,
     pub message: Value,
@@ -19,24 +20,24 @@ impl MessageResponse {
         }
     }
 }
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, ToSchema)]
 pub struct ErrorResponse {
     pub message: String,
     pub error: String,
 }
 
-#[derive(Debug, Clone, Deserialize, Validate)]
+#[derive(Debug, Clone, Deserialize, Validate, ToSchema)]
 pub struct UrlRequest {
     #[validate(url, length(max = 200))]
     pub url: String,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, ToSchema)]
 pub struct ListUrlsResponse {
     pub urls: Vec<TinyUrl>,
 }
 
-#[derive(Debug, Clone, FromRow, Deserialize, Serialize)]
+#[derive(Debug, Clone, FromRow, Deserialize, Serialize, ToSchema)]
 pub struct TinyUrl {
     pub url: String,
     pub src_url: String,
